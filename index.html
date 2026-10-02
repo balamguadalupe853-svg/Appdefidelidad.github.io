@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#d978a2">
+<meta name="description" content="Programa de fidelidad de MI BELLO ARTE">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>MI BELLO ARTE · Fidelidad</title>
+<style>
+:root{--p:#d978a2;--p2:#f8dce8;--bg:#fff8fb;--ink:#633b4d;--gold:#f4cf70}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:linear-gradient(145deg,#f9e4ed,#f2c8dc);color:var(--ink)}
+.app{max-width:540px;margin:auto;min-height:100vh;background:var(--bg);box-shadow:0 0 35px #8d4b6922}
+header{padding:22px 18px 18px;text-align:center;color:#fff;background:linear-gradient(180deg,#e7a5c2,#d978a2);border-radius:0 0 28px 28px}
+.logo{width:105px;height:105px;border-radius:24px;background:#fff;object-fit:cover}
+h1{font-size:23px;margin:8px 0 2px}.sub{font-size:13px;margin:0}
+main{padding:17px}.card{background:#fff;border-radius:22px;padding:17px;margin-bottom:14px;box-shadow:0 8px 25px #8d4b6914}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:#fff0f6;border-radius:17px;text-align:center;padding:13px}.stat b{display:block;font-size:25px;color:var(--p)}
+input{width:100%;padding:12px;border:1px solid #ecc5d6;border-radius:13px;background:#fffafd;font-size:15px;outline:0}
+button{border:0;border-radius:13px;padding:11px 14px;font-weight:800;cursor:pointer}.primary{background:var(--p);color:white}.wide{width:100%;margin-top:9px}.soft{background:#f8e2ec;color:var(--ink)}
+.client{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid #f1dce5}.client:last-child{border:0}.avatar{width:44px;height:44px;border-radius:50%;background:#f8d3e2;display:grid;place-items:center}.info{flex:1}.name{font-weight:800}.small{font-size:12px;color:#9b6b80}.stamps{display:flex;gap:5px;margin:7px 0}.stamp{width:24px;height:24px;border-radius:50%;border:2px dashed #d99ab5;display:grid;place-items:center}.on{background:var(--p);border-style:solid;color:#fff}.actions{display:flex;gap:6px;flex-wrap:wrap}.actions button{font-size:12px;padding:8px 10px}.prize{background:linear-gradient(135deg,#fff3bd,#ffe2ef);border:1px solid #f0d28a}.empty{text-align:center;padding:18px;color:#a16f84}footer{text-align:center;font-size:11px;color:#a8798b;padding:0 20px 24px}
+</style>
+</head>
+<body>
+<div class="app">
+<header><img class="logo" src="icons/icon-192.png"><h1>MI BELLO ARTE</h1><p class="sub">CREACIONES A CROCHET · FIDELIDAD</p></header>
+<main>
+<div class="card"><div class="stats"><div class="stat"><b id="tc">0</b>clientas</div><div class="stat"><b id="tp">0</b>premios entregados</div></div></div>
+<div class="card prize"><b>🎀 5 sellos = 🎁 premio</b><br><span style="font-size:13px">Registra cada sello después de una compra. Al completar 5 podrás registrar el premio y empezar una nueva tarjeta.</span></div>
+<div class="card"><h3 style="margin-top:0">✨ Nueva clienta</h3><input id="newName" placeholder="Nombre de la clienta"><button class="primary wide" onclick="add()">Agregar clienta 💗</button></div>
+<div class="card"><h3 style="margin-top:0">💗 Mis clientas</h3><input id="q" placeholder="Buscar clienta..." oninput="render()"><div id="list"></div></div>
+</main><footer>Los datos se guardan en este dispositivo.</footer>
+</div>
+<script>
+const K='mba-fidelidad-v2';let db=JSON.parse(localStorage.getItem(K)||'[]');
+function save(){localStorage.setItem(K,JSON.stringify(db));render()}
+function add(){let e=document.getElementById('newName'),n=e.value.trim();if(!n)return alert('Escribe el nombre de la clienta');db.push({id:Date.now(),n,s:0,p:0});e.value='';save()}
+function plus(id){let c=db.find(x=>x.id===id);if(c.s<5){c.s++;save();if(c.s===5)setTimeout(()=>alert('🎉 ¡Completó 5 sellos! Premio disponible'),50)}}
+function minus(id){let c=db.find(x=>x.id===id);if(c.s){c.s--;save()}}
+function prize(id){let c=db.find(x=>x.id===id);if(c.s<5)return;if(confirm('¿Confirmas que entregaste el premio a '+c.n+'?')){c.p++;c.s=0;save()}}
+function del(id){if(confirm('¿Eliminar esta clienta?')){db=db.filter(x=>x.id!==id);save()}}
+function esc(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function render(){
+let q=document.getElementById('q').value.toLowerCase(),a=db.filter(c=>c.n.toLowerCase().includes(q));
+document.getElementById('tc').textContent=db.length;document.getElementById('tp').textContent=db.reduce((x,c)=>x+c.p,0);
+document.getElementById('list').innerHTML=a.length?a.map(c=>`<div class="client"><div class="avatar">🧶</div><div class="info"><div class="name">${esc(c.n)}</div><div class="small">${c.s}/5 sellos ${c.s===5?'· 🎁 Premio disponible':''}</div><div class="stamps">${[1,2,3,4,5].map(i=>`<span class="stamp ${i<=c.s?'on':''}">${i<=c.s?'♥':''}</span>`).join('')}</div><div class="actions">${c.s<5?`<button class="primary" onclick="plus(${c.id})">+ Sello</button>`:`<button class="primary" onclick="prize(${c.id})">🎁 Entregar premio</button>`}${c.s?`<button class="soft" onclick="minus(${c.id})">− Sello</button>`:''}<button class="soft" onclick="del(${c.id})">Eliminar</button></div></div></div>`).join(''):'<div class="empty">Aún no tienes clientas registradas 🌷</div>'
+}
+render();
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+</script>
+</body></html>
